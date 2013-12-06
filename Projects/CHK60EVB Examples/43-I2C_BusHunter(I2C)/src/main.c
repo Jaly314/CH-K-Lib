@@ -49,9 +49,10 @@
 
 
 // I2C Hunter PORT define
-#define I2C_HUNTER_MAP    I2C1_SCL_PC10_SDA_PC11
-#define I2C_HUNTER_PORT   I2C1
-
+#define I2C_HUNTER_MAP        I2C1_SCL_PC10_SDA_PC11
+#define I2C_HUNTER_PORT       I2C1
+#define I2C_HUNTER_BUS_SPEED  I2C_CLOCK_SPEED_300KHZ
+const uint32_t I2C_HunterBusSpeedTable[]= {I2C_CLOCK_SPEED_50KHZ, I2C_CLOCK_SPEED_100KHZ, I2C_CLOCK_SPEED_150KHZ, I2C_CLOCK_SPEED_200KHZ, I2C_CLOCK_SPEED_250KHZ, I2C_CLOCK_SPEED_300KHZ};
 //实现MINISHELL所需要的PutChar函数
 static void Putc(uint8_t data)
 {
@@ -65,17 +66,24 @@ static uint8_t Getc(void)
 	return ch;
 }
 
+
+
 //用户函数 LED控制 这只是一个例子
 int CommandFun_I2C(int argc, char *argv[])
 {
-    uint8_t i;
+    uint8_t i,j;
 	  uint8_t address_found = 0;
     //输入内容只有2段(空格为分隔符)   
     if(argc == 2)
 		{
-        if(!strcmp("scan", argv[1]))
-        {
-            MINISHELL_printf("Begin scanning I2C bus ...\r\n");
+			  for(j=0; j< ARRAY_SIZE(I2C_HunterBusSpeedTable); j++)
+				{
+				    I2C_InitTypeDef I2C_InitStruct1;
+						I2C_InitStruct1.I2CxMAP = I2C_HUNTER_MAP;
+            I2C_InitStruct1.I2C_ClockSpeed = j;
+						I2C_Init(&I2C_InitStruct1);
+						address_found = 0;
+            MINISHELL_printf("Begin scanning I2C bus at Speed:%d ...\r\n", j);
             for(i = 0; i < 255; i++)
             {
                 
@@ -96,7 +104,8 @@ int CommandFun_I2C(int argc, char *argv[])
 								}
 						}
 						MINISHELL_printf("scanning completed.%d address found!\r\n", address_found);
-        }
+				}
+
 		}
 		return 0;
 }
@@ -125,11 +134,8 @@ int main(void)
     LED_Init(LED_PinLookup_CHK60EVB, kNumOfLED);
     UART_DebugPortInit(UART4_RX_C14_TX_C15, 115200);
 	  DisplayCPUInfo();
-    I2C_InitTypeDef I2C_InitStruct1;
-    /* Initalize Kinetis I2C module  */
-    I2C_InitStruct1.I2CxMAP = I2C_HUNTER_MAP;
-    I2C_InitStruct1.I2C_ClockSpeed = I2C_CLOCK_SPEED_100KHZ;
-    I2C_Init(&I2C_InitStruct1);
+
+
 	
 	  UART_printf("I2C Bus Hunter! Build in :%s.\r\n", __DATE__);
 	  //安装连接器
