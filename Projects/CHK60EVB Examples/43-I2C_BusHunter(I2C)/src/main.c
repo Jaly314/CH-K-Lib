@@ -48,7 +48,7 @@
 //drivers:        ¹Ì¼þ¿âÔ´Âë
 
 
-
+// I2C Hunter PORT define
 #define I2C_HUNTER_MAP    I2C1_SCL_PC10_SDA_PC11
 #define I2C_HUNTER_PORT   I2C1
 
@@ -80,7 +80,7 @@ int CommandFun_I2C(int argc, char *argv[])
             {
                 
                 I2C_GenerateSTART(I2C_HUNTER_PORT);
-                I2C_Send7bitAddress(I2C_HUNTER_PORT,i,I2C_MASTER_WRITE);
+                I2C_Send7bitAddress(I2C_HUNTER_PORT, i, I2C_MASTER_WRITE);
 							  //receive succ.
                 if(!I2C_WaitAck(I2C_HUNTER_PORT))
 								{
